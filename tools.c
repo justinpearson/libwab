@@ -4,7 +4,7 @@
 //#include "defines.h"
 #include <errno.h>
 #include <iconv.h>
-#include <malloc.h>
+// #include <malloc.h> # commented out: avoids "no malloc.h" error on macos. Apparently malloc() is in stdlib.h anyway: https://stackoverflow.com/questions/56463049/should-mac-osx-have-a-malloc-h-file
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
