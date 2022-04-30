@@ -1,3 +1,116 @@
+This C program parses a Windows Address Book (.WAB) file and prints it to the screen in a nice human-readable format. It should work on any unix-based system with a C compiler.
+
+*Note:* It is Apr 2022. I'm on MacOS 11.6.5, using the `zsh` shell and this version of `gcc`:
+
+```shell
+$ gcc --version
+Configured with: --prefix=/Library/Developer/CommandLineTools/usr --with-gxx-include-dir=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/4.2.1
+Apple clang version 12.0.0 (clang-1200.0.32.2)
+Target: x86_64-apple-darwin20.6.0
+Thread model: posix
+InstalledDir: /Library/Developer/CommandLineTools/usr/bin
+```
+
+# Installation and usage:
+
+## Easy
+
+Get the source, compile it, and run it, like this:
+
+```shell
+$ git clone git@github.com:justinpearson/libwab.git
+$ cd libwab
+$ gcc -c cencode.c libwab.c pstwabids.c tools.c uerr.c wabread.c
+$ gcc -o wabread cencode.o libwab.o pstwabids.o tools.o uerr.o wabread.o -liconv 
+$ ./wabread address_book-2003-11-08.WAB
+
+# Bob Johnson
+dn: cn=Bob Johnson
+cn: Bob Johnson
+mail: bob@johnson.net
+
+# Alice Wilson
+dn: cn=Alice Wilson
+cn: Alice Wilson
+mail: alice@wilson.edu
+
+...
+
+```
+
+**Note:** The above approach does not support unicode in the WAB file. So when compiling `libwab.c` you will get an error
+
+```
+libwab.c:17:2: warning: "ICONV IS MISSING!  Unicode will be BADLY broken" [-W#warnings]
+```
+
+but the final program still worked for me.
+
+
+
+
+## Need unicode support? Use `./configure`
+
+The very first commit in this repo included files to build the project with the `./configure && make ` toolchain. Later commits replaced those with cmake files, but I don't have cmake, so I restored those files and tweaked `libwab.c` to conditionally include the `config.h` supplied by `make`.
+
+This is more complex than just using `gcc`, but it includes`iconv.h` if the OS has it, which is needed for unicode support.
+
+```shell
+$ git clone git@github.com:justinpearson/libwab.git
+$ cd libwab
+$ ./configure
+$ make   # no "iconv missing" error :)
+$ ./wabread address_book-2003-11-08.WAB
+
+# Bob Johnson
+dn: cn=Bob Johnson
+cn: Bob Johnson
+mail: bob@johnson.net
+
+# Alice Wilson
+dn: cn=Alice Wilson
+cn: Alice Wilson
+mail: alice@wilson.edu
+
+...
+```
+
+
+
+
+
+## Using cmake
+
+If you need unicode support and you have `cmake`, try this:
+
+```shell
+$ git clone git@github.com:justinpearson/libwab.git
+$ cd libwab
+$ cmake  # or maybe you need to run `cmake libwab` in parent dir?
+$ make
+$ ./wabread address_book-2003-11-08.WAB
+```
+
+(I haven't tested this.)
+
+
+
+# Background
+
+I forked this repo from [pboettch/libwab](https://github.com/pboettch/libwab) and made the following changes to simplify it:
+
+1. Remove `#include <malloc.h>` from `tools.c` to avoid compiler error. It still compiled: apparently `malloc()` is included in `stdlib.h` anyway, see [here](https://stackoverflow.com/questions/56463049/should-mac-osx-have-a-malloc-h-file).
+
+2. Copied `./configure`-based installation files from original commit, and tweaked `libwab.c` to conditionally use the generated `config.h` file.
+
+3. Improved README.
+
+
+
+# Previous README:
+
+```
+
 PREFACE
 -------
 
@@ -133,3 +246,5 @@ email (I'm sure you can figure it out):
   tec-man       is my email domain
   dawt          is a misspelling of dot
   com           is the end
+
+```
